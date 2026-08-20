@@ -20,8 +20,8 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Install dependencies
-      run: npm install
+    - name: Install dependencies directly
+      run: npm install node-telegram-bot-api axios
 
     - name: Run Telegram Bot
       run: node bot.js
