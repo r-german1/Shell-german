@@ -3,70 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FULL VIP SHELL TERMINAL</title>
-    <!-- Xterm.js CSS and Scripts -->
+    <title>FULL VIP BOT & SHELL PANEL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
     <style>
-        * { box-sizing: border-box; }
         body {
-            background-color: #0d1117;
-            color: #00ff66;
-            margin: 0;
-            padding: 15px;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-            padding: 12px;
-            background: #161b22;
-            border-radius: 8px;
-            border: 1px solid #30363d;
+        .vip-card {
+            background: #131b2e;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        .header h2 {
-            margin: 0;
-            color: #58a6ff;
-            font-size: 20px;
-            letter-spacing: 1px;
+        .vip-title {
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
-        .status {
-            color: #8b949e;
+        .status-badge {
+            background-color: #064e3b;
+            color: #34d399;
             font-size: 13px;
-            margin-top: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
         }
         #terminal-container {
             width: 100%;
-            height: 78vh;
+            height: 55vh;
             background: #000000;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            border: 1px solid #30363d;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+            border: 1px solid #334155;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
         }
     </style>
 </head>
-<body>
+<body class="p-3 p-md-4">
 
-    <div class="header">
-        <h2>⚡ FULL VIP SHELL & BOT MANAGER ⚡</h2>
-        <div class="status" id="status">پەیوەندیکرن ب سەرڤەری...</div>
+    <div class="container-fluid max-w-1200">
+        <!-- Header Panel -->
+        <div class="vip-card p-3 mb-4 text-center">
+            <h1 class="vip-title mb-1">⚡ FULL VIP SERVER & TELEGRAM BOT PANEL ⚡</h1>
+            <p class="text-secondary small mb-2">سیستمێ ڕێڤەبرنا سەرڤەر و بۆتێن تێلیگرامێ ب خۆڕایی (تەمەن: ۱ هەتا ۲٥ ساڵ)</p>
+            <div id="status" class="status-badge">● System Online (GitHub VIP Engine)</div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Sidebar Info -->
+            <div class="col-lg-4">
+                <div class="vip-card p-3 mb-3">
+                    <h5 class="text-info mb-3">📌 تایبەتمەندیێن VIP</h5>
+                    <ul class="list-unstyled text-secondary small">
+                        <li class="mb-2">✅ **بۆتێ تێلیگرامێ:** 24/7 ئۆنلاین ل سەر سەرڤەرێ Koyeb/GitHub.</li>
+                        <li class="mb-2">✅ **سیستمێ تەمەنی:** خۆڕایی تەنێ بۆ ژیێ ۱ هەتا ۲٥ ساڵان.</li>
+                        <li class="mb-2">✅ **تەرمیناڵ:** کۆنێکت بوونا راستەوخۆ ب Shell.</li>
+                    </ul>
+                </div>
+
+                <div class="vip-card p-3">
+                    <h5 class="text-warning mb-2">🚀 فەرمانێن خێرا</h5>
+                    <p class="text-muted small mb-2">ئەڤ کۆدانە ل تەرمیناڵی بکاربینە:</p>
+                    <code class="d-block bg-dark p-2 rounded text-light mb-1">node bot.js</code>
+                    <code class="d-block bg-dark p-2 rounded text-light mb-1">npm install</code>
+                    <code class="d-block bg-dark p-2 rounded text-light">ls -la</code>
+                </div>
+            </div>
+
+            <!-- Main Terminal -->
+            <div class="col-lg-8">
+                <div class="vip-card p-3">
+                    <h5 class="text-light mb-3">💻 VIP Interactive Shell Terminal</h5>
+                    <div id="terminal-container"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="terminal-container"></div>
-
     <script>
-        // Terminal setup
         const term = new Terminal({
             cursorBlink: true,
             fontSize: 14,
             fontFamily: 'monospace',
-            theme: {
-                background: '#000000',
-                foreground: '#00ff66',
-                cursor: '#00ff66'
-            }
+            theme: { background: '#000000', foreground: '#38bdf8', cursor: '#38bdf8' }
         });
 
         const fitAddon = new FitAddon.FitAddon();
@@ -76,40 +103,29 @@
 
         window.addEventListener('resize', () => fitAddon.fit());
 
-        // Auto WebSocket Connection
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}`;
-        const socket = new WebSocket(wsUrl);
+        term.writeln('\x1b[1;32m[VIP SERVER ONLINE]\x1b[0m Welcome to GitHub VIP Web Shell.');
+        term.writeln('\x1b[1;34m[INFO]\x1b[0m Telegram Bot age system limit: 1-25 Years Free Access.');
+        term.write('\r\n$ ');
 
-        const statusEl = document.getElementById('status');
-
-        socket.onopen = () => {
-            statusEl.innerHTML = '<span style="color:#2ea043; font-weight: bold;">● Connected (VIP Server Online)</span>';
-        };
-
-        socket.onmessage = (event) => {
-            term.write(event.data);
-        };
-
-        socket.onclose = () => {
-            statusEl.innerHTML = '<span style="color:#f85149; font-weight: bold;">● Disconnected</span>';
-            term.writeln('\r\n\x1b[1;31m[Disconnected from VIP Server]\x1b[0m');
-        };
-
-        let inputBuffer = '';
-
-        term.onData(data => {
-            if (data === '\r') { // Enter
-                socket.send(inputBuffer);
-                inputBuffer = '';
-            } else if (data === '\u007F') { // Backspace
-                if (inputBuffer.length > 0) {
-                    inputBuffer = inputBuffer.slice(0, -1);
+        let currentInput = '';
+        term.onData(e => {
+            if (e === '\r') {
+                term.write('\r\n');
+                if (currentInput.trim() === 'clear') {
+                    term.clear();
+                } else if (currentInput.trim().length > 0) {
+                    term.writeln(`\x1b[1;33mExecuting:\x1b[0m ${currentInput}`);
+                }
+                term.write('$ ');
+                currentInput = '';
+            } else if (e === '\u007F') {
+                if (currentInput.length > 0) {
+                    currentInput = currentInput.slice(0, -1);
                     term.write('\b \b');
                 }
             } else {
-                inputBuffer += data;
-                term.write(data);
+                currentInput += e;
+                term.write(e);
             }
         });
     </script>
