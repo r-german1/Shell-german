@@ -3,37 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free VIP VPS & Telegram Bot Host</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>VIP Shell & Bot Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
     <style>
-        body { background-color: #0f172a; color: #fff; font-family: sans-serif; }
-        .card { background-color: #1e293b; border: 1px solid #334155; color: #fff; }
-        .btn-vip { background-color: #38bdf8; color: #0f172a; font-weight: bold; }
+        body { background-color: #0d1117; color: #fff; margin: 0; padding: 20px; font-family: monospace; }
+        .header { text-align: center; margin-bottom: 15px; color: #58a6ff; }
+        #terminal-container { width: 100%; height: 80vh; background: #000; padding: 10px; border-radius: 8px; border: 1px solid #30363d; }
     </style>
 </head>
-<body class="d-flex align-items-center min-vh-100">
-    <div class="container text-center">
-        <h1 class="mb-4 text-info">Free VIP Cloud Server & Bot Host</h1>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card p-4 shadow-lg">
-                    <h3>داخوازکرنا VPS / بۆتێ خۆڕایی</h3>
-                    <form id="hostForm">
-                        <div class="mb-3">
-                            <input type="text" class="form-control" id="username" placeholder="ناڤێ بەکارهێنەری" required>
-                        </div>
-                        <div class="mb-3">
-                            <select class="form-select" id="serviceType">
-                                <option value="vps">Linux VPS (1 vCPU, 2GB RAM)</option>
-                                <option value="bot">Telegram Bot Hosting (Python/Node.js)</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-vip w-100">دروستکرن (Free VIP)</button>
-                    </form>
-                    <div id="result" class="mt-3"></div>
-                </div>
-            </div>
-        </div>
+<body>
+    <div class="header">
+        <h2>🚀 VIP Shell & Telegram Bot Terminal</h2>
     </div>
+    <div id="terminal-container"></div>
+
+    <script>
+        const term = new Terminal({ cursorBlink: true, theme: { background: '#000000' } });
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(document.getElementById('terminal-container'));
+        fitAddon.fit();
+
+        term.writeln('\x1b[1;32m[VIP System] Terminal is ready. Type your commands below...\x1b[0m\n');
+
+        let currentInput = '';
+        term.onData(e => {
+            if (e === '\r') { // Enter key
+                term.write('\r\n');
+                if (currentInput.trim().length > 0) {
+                    term.writeln(`\x1b[1;34m[Executing]:\x1b[0m ${currentInput}`);
+                    // لێرەدا فەرمان بۆ بەشێ پشتێ (Backend) دهێتە ناردن
+                }
+                term.write('$ ');
+                currentInput = '';
+            } else if (e === '\u007F') { // Backspace
+                if (currentInput.length > 0) {
+                    currentInput = currentInput.slice(0, -1);
+                    term.write('\b \b');
+                }
+            } else {
+                currentInput += e;
+                term.write(e);
+            }
+        });
+        term.write('$ ');
+    </script>
 </body>
 </html>
