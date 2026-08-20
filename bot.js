@@ -1,54 +1,112 @@
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 
-// ⚠️ توکنێ خۆ ل شوێنا 'YOUR_TELEGRAM_BOT_TOKEN' بپێستینە
-const token = 'YOUR_TELEGRAM_BOT_TOKEN';
+// ⚡ توکنێ تە یێ فەرمی ل ڤێرێ هاتە جێگیرکرن
+const TOKEN = '8885872945:AAFBMsgi1ZQvtYMjtA48sWBaR3TdyXjJNpg';
+const REQUIRED_CHANNEL = '@KurdishCinemas'; 
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(TOKEN, { polling: true });
 
-// بنکەیێ داتایان بۆ تۆمارکرنا تەمەنێ بەکارهێنەران
-const userData = {};
+console.log("🚀 VIP Social Media Downloader Bot is Running...");
 
-console.log("🚀 VIP Bot with Age Restriction (Max 25 Years) is running...");
+// بپشکنە کا بەکارهێنەر ل کەناڵی جۆین بوویە یان نا
+async function isUserSubscribed(userId) {
+    try {
+        const member = await bot.getChatMember(REQUIRED_CHANNEL, userId);
+        const status = member.status;
+        return ['creator', 'administrator', 'member'].includes(status);
+    } catch (error) {
+        console.error("Error checking channel membership:", error.message);
+        return false;
+    }
+}
 
-// فەرمانا دەستپێکێ /start
-bot.onText(/\/start/, (msg) => {
+// نیشاندانا پەیاما جۆینبوونا ئیجباری
+function sendForceJoinMessage(chatId) {
+    const opts = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "📢 جۆینبوونا کەناڵی (KurdishCinemas)", url: `https://t.me/${REQUIRED_CHANNEL.replace('@', '')}` }],
+                [{ text: "🔄 مـن جـۆیـن کــرد (پشتڕاستکرنەوە)", callback_data: "check_subscription" }]
+            ]
+        }
+    };
+    bot.sendMessage(chatId, `⛔ **ببۆڕە! بۆ بکارئینانا بۆتی دڤێت سەرەتا جۆینی کەناڵێ مە ببی.**\n\nئەگەر unjoin بکی یان جۆین نەبی، بۆت کار ناکەت!`, { parse_mode: 'Markdown', ...opts });
+}
+
+// فەرمانا /start
+bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
 
-    if (userData[userId] && userData[userId].registered) {
-        bot.sendMessage(chatId, `چالاكە! هەژمارا تە سەرکەفتوو بوو. (تەمەنێ تە: ${userData[userId].age} ساڵ)\nتۆ دشێی ب خۆڕایی بکاربینی! ⚡`);
-    } else {
-        userData[userId] = { step: 'WAITING_FOR_AGE' };
-        bot.sendMessage(chatId, "سڵاو! بەخێر بێی بۆ خزمەتگوزاریا خۆڕایی (Free VIP).\n\nتکایە **تەمەنێ خۆ (ب ژمارە)** بنڤێسە دا کو سیستم هەژمارا تە چالاک بکت (تەنێ بۆ تەمەنێ هەتا 25 ساڵانە):");
+    const subscribed = await isUserSubscribed(userId);
+    if (!subscribed) {
+        return sendForceJoinMessage(chatId);
+    }
+
+    bot.sendMessage(chatId, `✨ **بەخێر بێی بۆ بۆتێ VIP یێ داگرتنا میدیایێ!**\n\nتۆ دشێی ڕاستەوخۆ لینکێ (TikTok, Instagram, YouTube, Snapchat, Facebook) بۆ من بڕێزی دا ب بەلاڕەشی و **بێ No Watermark (MP4 / MP3)** بۆ تە دابگرم!`, { parse_mode: 'Markdown' });
+});
+
+// پشکنینا دووبارە دەمێ کلیک ل سەر کۆمبوتا "پشتڕاستکرنەوە" دکەت
+bot.on('callback_query', async (query) => {
+    const chatId = query.message.chat.id;
+    const userId = query.from.id;
+
+    if (query.data === "check_subscription") {
+        const subscribed = await isUserSubscribed(userId);
+        if (subscribed) {
+            bot.answerCallbackQuery(query.id, { text: "✅ پیڕۆزە! نوکە تۆ دشێی بۆتی بکاربینی." });
+            bot.sendMessage(chatId, "🎉 سوپاس بۆ جۆینبوونێ! نوکە هەر لینکەکێ هەی بۆ من بڕێزە دا ب کوالیتییا VIP دابگرم.");
+        } else {
+            bot.answerCallbackQuery(query.id, { text: "❌ هەتا نوکە تۆ جۆینی کەناڵی نەبوویە!", show_alert: true });
+        }
     }
 });
 
-// وەرگرتنا پەیامان و پشتڕاستکرنا تەمەنی
-bot.on('message', (msg) => {
+// وەرگرتنا لینکێن میدیایێ
+bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
     const text = msg.text ? msg.text.trim() : '';
 
-    if (text === '/start') return;
+    if (text.startsWith('/')) return;
 
-    // گەر بەکارهێنەر ل قۆناغا تۆمارکرنا تەمەنی بێت
-    if (userData[userId] && userData[userId].step === 'WAITING_FOR_AGE') {
-        const age = parseInt(text, 10);
+    // پشکنینا جۆینبوونێ بەریا هەر داواکارییەکێ (ئەگەر unjoin کربیت ڕاستەوخۆ ڕادەگرت)
+    const subscribed = await isUserSubscribed(userId);
+    if (!subscribed) {
+        return sendForceJoinMessage(chatId);
+    }
 
-        if (isNaN(age) || age <= 0) {
-            bot.sendMessage(chatId, "❌ تکایە تەنێ ژمارەیەکا دروست بنڤێسە (بۆ نموونە: 18 یان 22):");
-            return;
+    if (text.startsWith('http://') || text.startsWith('https://')) {
+        const loadingMsg = await bot.sendMessage(chatId, "⏳ **یێ ل سەر کار دکەت... داگرتنا میدیایێ ژ سەرڤەرێ VIP...**", { parse_mode: 'Markdown' });
+
+        try {
+            const apiUrl = `https://api.cobalt.tools/api/json`;
+            const response = await axios.post(apiUrl, {
+                url: text,
+                vCodec: "h264",
+                noWatermark: true
+            }, {
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+            });
+
+            if (response.data && response.data.url) {
+                const mediaUrl = response.data.url;
+
+                await bot.sendVideo(chatId, mediaUrl, {
+                    caption: "✅ **داگرتن ب سەرکەفتنی ئامادە بوو!**\n📢 Channel: @KurdishCinemas",
+                    parse_mode: 'Markdown'
+                });
+            } else {
+                bot.sendMessage(chatId, "❌ ببۆڕە، کێشەیەک ل داگرتنا ڤی لینکی پەیدا بوو. تکایە پشتڕاست ببەوە کو لینکێ تە دروستە.");
+            }
+            bot.deleteMessage(chatId, loadingMsg.message_id);
+        } catch (err) {
+            console.error("Download Error:", err.message);
+            bot.deleteMessage(chatId, loadingMsg.message_id);
+            bot.sendMessage(chatId, "❌ نەتوانرا ڤیدیۆ بێتە داگرتن. تکایە لینکەکێ دی یێ جێگیر بپشکنە.");
         }
-
-        if (age <= 25) {
-            userData[userId] = { age: age, registered: true, step: 'COMPLETED' };
-            bot.sendMessage(chatId, `✅ پیڕۆزە! تەمەنێ تە (${age} ساڵ) هاتە پەسەندکرن.\n\nنوکە خزمەتگوزاریا Full VIP بۆ تە بەلاڕەشە و 24 کاژێری تۆ دشێی بکاربینی! 🎉`);
-        } else {
-            userData[userId] = { age: age, registered: false, step: 'REJECTED' };
-            bot.sendMessage(chatId, `⛔ ببورە! ئەڤ خزمەتگوزارییە خۆڕاییە تەنێ بۆ ئەو کەسانەیە کو تەمەنێ وان ۲٥ ساڵ یان کێمترە. (تەمەنێ تە: ${age} ساڵ)`);
-        }
-    } else if (userData[userId] && userData[userId].registered) {
-        // ئەگەر تۆمارکری بێت و پەیام نارد بێت
-        bot.sendMessage(chatId, `🤖 بەرسڤا ئۆتۆماتیکی VIP: پەیاما تە ژ لایەنێ سیستمێ خۆڕایی هاتە وەرگرتن!\nتە نڤێسی: ${text}`);
+    } else {
+        bot.sendMessage(chatId, "📥 تکایە **لینکەکێ دروست** ژ ڕستەیێن (TikTok, Instagram, YouTube, Snapchat, Facebook) بنڤێسە.");
     }
 });
