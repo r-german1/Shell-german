@@ -1,27 +1,13 @@
-name: Run Telegram Bot 24/7
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-  schedule:
-    - cron: '0 */3 * * *'
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Install dependencies directly
-      run: npm install node-telegram-bot-api axios
-
-    - name: Run Telegram Bot
-      run: node bot.js
+{
+  "name": "telegram-media-bot",
+  "version": "1.0.0",
+  "description": "Telegram Media Downloader Bot",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "node-telegram-bot-api": "^0.64.0"
+  }
+}
